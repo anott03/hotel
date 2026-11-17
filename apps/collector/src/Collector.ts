@@ -89,6 +89,7 @@ export default class Collector extends Cloudflare.Worker<Collector>()(
   "Collector",
   {
     main: import.meta.url,
+    domain: "hotel-collector.amitav.dev",
     compatibility: { flags: ["nodejs_compat"] },
     observability: {
       logs: { enabled: true, invocationLogs: false },

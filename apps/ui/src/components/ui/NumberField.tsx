@@ -3,7 +3,7 @@ import { useId } from "react";
 import { MinusIcon, PlusIcon } from "./icons.tsx";
 
 const STEPPER =
-  "flex h-full w-7 items-center justify-center border border-zinc-700 bg-zinc-900 text-zinc-400 select-none hover:not-data-disabled:bg-zinc-800 hover:not-data-disabled:text-zinc-100";
+  "flex h-full w-8 items-center justify-center border border-line bg-raised text-ink-soft select-none hover:not-data-disabled:bg-highlight hover:not-data-disabled:text-ink";
 
 export function NumberField(props: {
   readonly label: string;
@@ -22,15 +22,15 @@ export function NumberField(props: {
       onValueChange={(value) => props.onChange(value ?? 0)}
       className="flex items-center gap-2"
     >
-      <label htmlFor={id} className="text-sm whitespace-nowrap text-zinc-400">
+      <label htmlFor={id} className="text-sm whitespace-nowrap text-ink-soft">
         {props.label}
       </label>
       <BaseNumberField.Group className="flex h-8">
-        <BaseNumberField.Decrement className={`${STEPPER} rounded-l border-r-0`}>
+        <BaseNumberField.Decrement className={`${STEPPER} rounded-l-full border-r-0 pl-1`}>
           <MinusIcon />
         </BaseNumberField.Decrement>
-        <BaseNumberField.Input className="h-full w-[8ch] border border-zinc-700 bg-zinc-900 px-2 text-sm text-zinc-100 tabular-nums focus:z-1 focus:outline-2 focus:-outline-offset-1 focus:outline-sky-500" />
-        <BaseNumberField.Increment className={`${STEPPER} rounded-r border-l-0`}>
+        <BaseNumberField.Input className="h-full w-[8ch] border border-line bg-raised px-2 text-sm text-ink tabular-nums focus:z-1 focus:outline-2 focus:-outline-offset-1 focus:outline-accent" />
+        <BaseNumberField.Increment className={`${STEPPER} rounded-r-full border-l-0 pr-1`}>
           <PlusIcon />
         </BaseNumberField.Increment>
       </BaseNumberField.Group>

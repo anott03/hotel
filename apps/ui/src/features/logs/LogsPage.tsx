@@ -4,6 +4,7 @@ import * as Atom from "effect/reactivity/Atom";
 import { useState } from "react";
 import { FilterBar, RangeSelect, RefreshButton, ServiceSelect } from "../../components/Filters.tsx";
 import { Result } from "../../components/Result.tsx";
+import { ServiceTag } from "../../components/ServiceTag.tsx";
 import { Button, Input, Select } from "../../components/ui/index.ts";
 import { navigate } from "../../lib/route.ts";
 import { formatTimestamp, rangeFor, type RangePresetId } from "../../lib/time.ts";
@@ -40,10 +41,10 @@ const logsAtom = Atom.family((key: string) => {
 });
 
 const severityClass = (severityNumber: number): string => {
-  if (severityNumber >= 17) return "text-red-400";
-  if (severityNumber >= 13) return "text-amber-400";
-  if (severityNumber >= 9) return "text-sky-400";
-  return "text-zinc-500";
+  if (severityNumber >= 17) return "bg-cherry/15 text-cherry";
+  if (severityNumber >= 13) return "bg-tangerine/15 text-tangerine";
+  if (severityNumber >= 9) return "bg-highlight text-ink";
+  return "text-ink-faint";
 };
 
 export function LogsPage() {
@@ -103,7 +104,7 @@ export function LogsPage() {
 function LogTable(props: { readonly logs: ReadonlyArray<LogEntry> }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   if (props.logs.length === 0)
-    return <p className="p-4 text-sm text-zinc-500">No logs in this range.</p>;
+    return <p className="p-4 text-sm text-ink-faint">No logs in this range.</p>;
   return (
     <table className="w-full font-mono text-xs">
       <tbody>
@@ -129,18 +130,24 @@ function LogRow(props: {
   return (
     <>
       <tr
-        className="cursor-pointer border-b border-zinc-900 align-top hover:bg-zinc-900"
+        className="cursor-pointer border-b border-line/30 align-top hover:bg-raised"
         onClick={props.onToggle}
       >
-        <td className="px-4 py-1 whitespace-nowrap text-zinc-500">{formatTimestamp(log.time)}</td>
-        <td className={`px-2 py-1 whitespace-nowrap ${severityClass(log.severityNumber)}`}>
-          {log.severityText || log.severityNumber}
+        <td className="px-4 py-1 whitespace-nowrap text-ink-faint">{formatTimestamp(log.time)}</td>
+        <td className="px-2 py-1 whitespace-nowrap">
+          <span
+            className={`inline-block rounded-full px-2 font-medium ${severityClass(log.severityNumber)}`}
+          >
+            {log.severityText || log.severityNumber}
+          </span>
         </td>
-        <td className="px-2 py-1 whitespace-nowrap text-violet-300">{log.serviceName}</td>
+        <td className="px-2 py-1">
+          <ServiceTag name={log.serviceName} />
+        </td>
         <td className="w-full px-2 py-1 break-all">{log.body}</td>
       </tr>
       {props.expanded && (
-        <tr className="border-b border-zinc-900 bg-zinc-900/60">
+        <tr className="border-b border-line/30 bg-raised/60">
           <td colSpan={4} className="px-4 py-3">
             {log.traceId !== null && (
               <Button
@@ -151,7 +158,7 @@ function LogRow(props: {
                 View trace {log.traceId}
               </Button>
             )}
-            <pre className="whitespace-pre-wrap text-zinc-400">
+            <pre className="whitespace-pre-wrap text-ink-soft">
               {JSON.stringify(
                 { attributes: log.attributes, resource: log.resourceAttributes },
                 null,

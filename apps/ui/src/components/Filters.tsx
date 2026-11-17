@@ -14,7 +14,7 @@ const RANGE_OPTIONS = RANGE_PRESETS.map((preset) => ({ value: preset.id, label: 
 
 export function FilterBar(props: { readonly children: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-zinc-800 px-4 py-3">
+    <div className="flex flex-wrap items-center gap-2 border-b border-line/60 px-4 py-3">
       {props.children}
     </div>
   );

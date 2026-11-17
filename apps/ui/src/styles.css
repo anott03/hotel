@@ -3,11 +3,69 @@
 @theme {
   --font-sans: "Allo", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-canvas: oklch(0.2 0.05 290);
+  --color-raised: oklch(0.25 0.058 290);
+  --color-highlight: oklch(0.31 0.068 290);
+  --color-line: oklch(0.4 0.075 290);
+
+  --color-ink: oklch(0.97 0.012 290);
+  --color-ink-soft: oklch(0.8 0.035 290);
+  --color-ink-faint: oklch(0.64 0.045 290);
+
+  --color-cherry: oklch(0.7 0.2 22);
+  --color-tangerine: oklch(0.79 0.16 55);
+  --color-lemon: oklch(0.89 0.17 98);
+  --color-kiwi: oklch(0.84 0.19 138);
+  --color-mint: oklch(0.84 0.13 172);
+  --color-aqua: oklch(0.81 0.12 215);
+  --color-blueberry: oklch(0.74 0.15 262);
+  --color-grape: oklch(0.74 0.17 305);
+  --color-bubblegum: oklch(0.79 0.16 345);
+
+  --color-accent: var(--color-lemon);
+
+  --shadow-sticker: 0 2px 0 var(--color-line);
+
+  --animate-hop: hop 0.9s ease-in-out infinite;
+
+  @keyframes hop {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-0.3rem);
+    }
+  }
+}
+
+@utility bg-rainbow {
+  background-image: linear-gradient(
+    to right,
+    var(--color-cherry),
+    var(--color-tangerine),
+    var(--color-lemon),
+    var(--color-kiwi),
+    var(--color-mint),
+    var(--color-aqua),
+    var(--color-blueberry),
+    var(--color-grape),
+    var(--color-bubblegum)
+  );
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
     font-feature-settings: "tnum";
+    color-scheme: dark;
+    scrollbar-color: var(--color-line) transparent;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-canvas);
   }
 }

@@ -8,7 +8,7 @@ export function Input(
   return (
     <BaseInput
       {...rest}
-      className={`h-8 rounded border border-zinc-700 bg-zinc-900 px-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-2 focus:-outline-offset-1 focus:outline-sky-500 ${className}`}
+      className={`h-8 rounded-full border border-line bg-raised px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-2 focus:-outline-offset-1 focus:outline-accent ${className}`}
     />
   );
 }

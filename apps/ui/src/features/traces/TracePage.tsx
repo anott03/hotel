@@ -8,6 +8,7 @@ import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { navigate } from "../../lib/route.ts";
 import { formatDuration, formatTimestamp } from "../../lib/time.ts";
+import { serviceTone } from "../../lib/tone.ts";
 import { TelemetryClient } from "../../rpc/client.ts";
 import { buildWaterfall } from "./waterfall.ts";
 
@@ -21,18 +22,18 @@ export function TracePage(props: { readonly traceId: string }) {
   const result = useAtomValue(traceAtom(props.traceId));
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-line/60 px-4 py-3">
         <Button variant="ghost" onClick={() => navigate({ page: "traces" })}>
           <ArrowLeftIcon />
           Traces
         </Button>
-        <span className="font-mono text-sm text-zinc-500">{props.traceId}</span>
+        <span className="font-mono text-sm text-ink-faint">{props.traceId}</span>
       </div>
       <div className="flex-1 overflow-auto">
         <Result
           result={result}
           onFailure={() => (
-            <p className="p-4 text-sm text-zinc-500">Trace not found in the retention window.</p>
+            <p className="p-4 text-sm text-ink-faint">Trace not found in the retention window.</p>
           )}
         >
           {(trace) => <TraceView trace={trace} />}
@@ -54,7 +55,7 @@ function TraceView(props: { readonly trace: TraceDetail }) {
         aria-label="Spans"
         value={selected}
         onValueChange={setSelected}
-        className="overflow-auto border-r border-zinc-800"
+        className="overflow-auto border-r border-line/60"
       >
         {rows.map((row) => (
           <Radio.Root
@@ -62,19 +63,21 @@ function TraceView(props: { readonly trace: TraceDetail }) {
             value={row.span.spanId}
             nativeButton
             render={<button type="button" />}
-            className="flex w-full items-center gap-2 border-b border-zinc-900 px-4 py-1 text-left text-xs outline-none hover:bg-zinc-900 focus-visible:bg-zinc-900 focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-sky-500 data-checked:bg-zinc-800"
+            className="flex w-full items-center gap-2 border-b border-line/30 px-4 py-1 text-left text-xs outline-none hover:bg-raised focus-visible:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent data-checked:bg-highlight"
           >
             <div className="w-2/5 truncate" style={{ paddingLeft: `${row.depth * 12}px` }}>
-              <span className="text-violet-300">{row.span.serviceName}</span>{" "}
-              <span className="text-zinc-300">{row.span.name}</span>
+              <span className={`font-medium ${serviceTone(row.span.serviceName).text}`}>
+                {row.span.serviceName}
+              </span>{" "}
+              <span className="text-ink-soft">{row.span.name}</span>
             </div>
             <div className="relative h-3 flex-1">
               <div
-                className={`absolute h-3 rounded-sm ${row.span.statusCode === 2 ? "bg-red-500" : "bg-sky-600"}`}
+                className={`absolute h-3 rounded-full ${row.span.statusCode === 2 ? "bg-cherry" : serviceTone(row.span.serviceName).fill}`}
                 style={{ left: `${row.offsetPct}%`, width: `${row.widthPct}%` }}
               />
             </div>
-            <span className="w-16 text-right font-mono text-zinc-500">
+            <span className="w-16 text-right font-mono text-ink-faint">
               {formatDuration(row.span.durationMs)}
             </span>
           </Radio.Root>
@@ -92,14 +95,14 @@ function SpanDetail(props: { readonly span: Span; readonly logs: ReadonlyArray<L
   return (
     <div className="space-y-4 text-sm">
       <div>
-        <h2 className="text-base font-medium">{span.name}</h2>
-        <p className="text-zinc-400">
+        <h2 className="text-lg font-semibold">{span.name}</h2>
+        <p className="text-ink-soft">
           {span.serviceName} · {SPAN_KINDS[span.kind] ?? span.kind} ·{" "}
           {formatDuration(span.durationMs)}
         </p>
-        <p className="font-mono text-xs text-zinc-500">{formatTimestamp(span.startTime)}</p>
+        <p className="font-mono text-xs text-ink-faint">{formatTimestamp(span.startTime)}</p>
         {span.statusCode === 2 && (
-          <p className="mt-1 text-red-400">Error: {span.statusMessage || "(no message)"}</p>
+          <p className="mt-1 text-cherry">Error: {span.statusMessage || "(no message)"}</p>
         )}
       </div>
       <Section title="Attributes" value={span.attributes} />
@@ -107,11 +110,11 @@ function SpanDetail(props: { readonly span: Span; readonly logs: ReadonlyArray<L
       {span.events.length > 0 && <Section title="Events" value={span.events} />}
       {props.logs.length > 0 && (
         <div>
-          <h3 className="mb-1 text-xs tracking-wide text-zinc-500 uppercase">Logs</h3>
+          <h3 className="mb-1 text-sm font-semibold text-ink-soft">Logs</h3>
           <ul className="space-y-1 font-mono text-xs">
             {props.logs.map((log) => (
               <li key={log.id}>
-                <span className="text-zinc-500">{formatTimestamp(log.time)}</span> {log.body}
+                <span className="text-ink-faint">{formatTimestamp(log.time)}</span> {log.body}
               </li>
             ))}
           </ul>
@@ -127,8 +130,8 @@ function Section(props: {
 }) {
   return (
     <div>
-      <h3 className="mb-1 text-xs tracking-wide text-zinc-500 uppercase">{props.title}</h3>
-      <pre className="rounded bg-zinc-900 p-2 text-xs whitespace-pre-wrap text-zinc-300">
+      <h3 className="mb-1 text-sm font-semibold text-ink-soft">{props.title}</h3>
+      <pre className="rounded-2xl bg-raised px-4 py-3 text-xs whitespace-pre-wrap text-ink-soft">
         {JSON.stringify(props.value, null, 2)}
       </pre>
     </div>

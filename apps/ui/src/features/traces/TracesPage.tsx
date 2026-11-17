@@ -4,9 +4,11 @@ import * as Atom from "effect/reactivity/Atom";
 import { useState } from "react";
 import { FilterBar, RangeSelect, RefreshButton, ServiceSelect } from "../../components/Filters.tsx";
 import { Result } from "../../components/Result.tsx";
+import { ServiceTag } from "../../components/ServiceTag.tsx";
 import { Checkbox, NumberField } from "../../components/ui/index.ts";
 import { navigate } from "../../lib/route.ts";
 import { formatDuration, formatTimestamp, rangeFor, type RangePresetId } from "../../lib/time.ts";
+import { serviceTone } from "../../lib/tone.ts";
 import { TelemetryClient } from "../../rpc/client.ts";
 
 interface TraceFilters {
@@ -77,11 +79,11 @@ export function TracesPage() {
 
 function TraceTable(props: { readonly traces: ReadonlyArray<TraceSummary> }) {
   if (props.traces.length === 0)
-    return <p className="p-4 text-sm text-zinc-500">No traces in this range.</p>;
+    return <p className="p-4 text-sm text-ink-faint">No traces in this range.</p>;
   const maxDuration = Math.max(...props.traces.map((trace) => trace.durationMs), 1);
   return (
     <table className="w-full text-sm">
-      <thead className="sticky top-0 bg-zinc-950 text-left text-xs text-zinc-500">
+      <thead className="sticky top-0 z-1 bg-canvas text-left text-xs text-ink-faint shadow-[inset_0_-1px_0_--alpha(var(--color-line)/60%)]">
         <tr>
           <th className="px-4 py-2 font-normal">Start</th>
           <th className="px-2 py-2 font-normal">Service</th>
@@ -94,33 +96,33 @@ function TraceTable(props: { readonly traces: ReadonlyArray<TraceSummary> }) {
         {props.traces.map((trace) => (
           <tr
             key={trace.traceId}
-            className="cursor-pointer border-b border-zinc-900 hover:bg-zinc-900"
+            className="cursor-pointer border-b border-line/30 hover:bg-raised"
             onClick={() => navigate({ page: "trace", traceId: trace.traceId })}
           >
-            <td className="px-4 py-1.5 font-mono text-xs whitespace-nowrap text-zinc-500">
+            <td className="px-4 py-1.5 font-mono text-xs whitespace-nowrap text-ink-faint">
               {formatTimestamp(trace.startTime)}
             </td>
-            <td className="px-2 py-1.5 whitespace-nowrap text-violet-300">
-              {trace.rootServiceName}
+            <td className="px-2 py-1.5">
+              <ServiceTag name={trace.rootServiceName} />
             </td>
             <td className="px-2 py-1.5">
               {trace.rootSpanName}
               {trace.errorCount > 0 && (
-                <span className="ml-2 rounded bg-red-950 px-1.5 text-xs text-red-300">
+                <span className="ml-2 rounded-full bg-cherry/15 px-2 text-xs font-medium text-cherry">
                   {trace.errorCount} error{trace.errorCount === 1 ? "" : "s"}
                 </span>
               )}
             </td>
-            <td className="px-2 py-1.5 text-zinc-400">{trace.spanCount}</td>
+            <td className="px-2 py-1.5 text-ink-soft">{trace.spanCount}</td>
             <td className="px-4 py-1.5">
               <div className="flex items-center gap-2">
-                <div className="h-1.5 flex-1 rounded bg-zinc-800">
+                <div className="h-2 flex-1 rounded-full bg-highlight">
                   <div
-                    className={`h-1.5 rounded ${trace.errorCount > 0 ? "bg-red-500" : "bg-sky-500"}`}
+                    className={`h-2 rounded-full ${trace.errorCount > 0 ? "bg-cherry" : serviceTone(trace.rootServiceName).fill}`}
                     style={{ width: `${Math.max((trace.durationMs / maxDuration) * 100, 1)}%` }}
                   />
                 </div>
-                <span className="w-16 text-right font-mono text-xs text-zinc-400">
+                <span className="w-16 text-right font-mono text-xs text-ink-soft">
                   {formatDuration(trace.durationMs)}
                 </span>
               </div>

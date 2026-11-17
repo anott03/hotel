@@ -10,9 +10,12 @@
     "build": "vp build"
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
     "@effect/atom-react": "^4.1.4",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@hotel/api": "workspace:*",
     "@hotel/api-worker": "workspace:*",
+    "allo-font": "^1.0.0",
     "effect": "^4.1.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

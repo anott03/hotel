@@ -3,11 +3,18 @@ import * as Planetscale from "@alchemy.run/planetscale";
 import * as Alchemy from "alchemy";
 import * as Effect from "effect/Effect";
 
-export const Database = Planetscale.PostgresDatabase("TelemetryDb", {
-  region: { slug: "us-east" },
-  clusterSize: "PS_5",
-  replicas: 0,
-  migrations: "./packages/db/migrations",
+const LIVE_STAGE = "live_amitav";
+
+export const Database = Effect.gen(function* () {
+  if (yield* Alchemy.ALCHEMY_DEV) {
+    return yield* Planetscale.PostgresDatabase.ref("TelemetryDb", { stage: LIVE_STAGE });
+  }
+  return yield* Planetscale.PostgresDatabase("TelemetryDb", {
+    region: { slug: "us-east" },
+    clusterSize: "PS_5",
+    replicas: 0,
+    migrations: "./packages/db/migrations",
+  });
 });
 
 export const CollectorRole = Effect.gen(function* () {

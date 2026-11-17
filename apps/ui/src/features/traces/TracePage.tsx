@@ -3,6 +3,9 @@ import type { Attributes, LogEntry, Span, SpanEvent, TraceDetail } from "@hotel/
 import * as Atom from "effect/reactivity/Atom";
 import { useMemo, useState } from "react";
 import { Result } from "../../components/Result.tsx";
+import { ArrowLeftIcon, Button } from "../../components/ui/index.ts";
+import { Radio } from "@base-ui/react/radio";
+import { RadioGroup } from "@base-ui/react/radio-group";
 import { navigate } from "../../lib/route.ts";
 import { formatDuration, formatTimestamp } from "../../lib/time.ts";
 import { TelemetryClient } from "../../rpc/client.ts";
@@ -19,12 +22,10 @@ export function TracePage(props: { readonly traceId: string }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3">
-        <button
-          className="text-sm text-zinc-400 hover:text-zinc-100"
-          onClick={() => navigate({ page: "traces" })}
-        >
-          ← Traces
-        </button>
+        <Button variant="ghost" onClick={() => navigate({ page: "traces" })}>
+          <ArrowLeftIcon />
+          Traces
+        </Button>
         <span className="font-mono text-sm text-zinc-500">{props.traceId}</span>
       </div>
       <div className="flex-1 overflow-auto">
@@ -49,14 +50,19 @@ function TraceView(props: { readonly trace: TraceDetail }) {
 
   return (
     <div className="grid h-full grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <div className="overflow-auto border-r border-zinc-800">
+      <RadioGroup
+        aria-label="Spans"
+        value={selected}
+        onValueChange={setSelected}
+        className="overflow-auto border-r border-zinc-800"
+      >
         {rows.map((row) => (
-          <button
+          <Radio.Root
             key={row.span.spanId}
-            className={`flex w-full items-center gap-2 border-b border-zinc-900 px-4 py-1 text-left text-xs hover:bg-zinc-900 ${
-              selected === row.span.spanId ? "bg-zinc-900" : ""
-            }`}
-            onClick={() => setSelected(row.span.spanId)}
+            value={row.span.spanId}
+            nativeButton
+            render={<button type="button" />}
+            className="flex w-full items-center gap-2 border-b border-zinc-900 px-4 py-1 text-left text-xs outline-none hover:bg-zinc-900 focus-visible:bg-zinc-900 focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-sky-500 data-checked:bg-zinc-800"
           >
             <div className="w-2/5 truncate" style={{ paddingLeft: `${row.depth * 12}px` }}>
               <span className="text-violet-300">{row.span.serviceName}</span>{" "}
@@ -71,9 +77,9 @@ function TraceView(props: { readonly trace: TraceDetail }) {
             <span className="w-16 text-right font-mono text-zinc-500">
               {formatDuration(row.span.durationMs)}
             </span>
-          </button>
+          </Radio.Root>
         ))}
-      </div>
+      </RadioGroup>
       <div className="overflow-auto p-4">
         {selectedSpan !== undefined && <SpanDetail span={selectedSpan} logs={spanLogs} />}
       </div>

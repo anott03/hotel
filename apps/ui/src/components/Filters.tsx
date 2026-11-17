@@ -4,10 +4,13 @@ import * as Atom from "effect/reactivity/Atom";
 import type { ReactNode } from "react";
 import { RANGE_PRESETS, rangeFor, type RangePresetId } from "../lib/time.ts";
 import { TelemetryClient } from "../rpc/client.ts";
+import { Button, RefreshIcon, Select } from "./ui/index.ts";
 
 const servicesAtom = Atom.family((preset: RangePresetId) =>
   TelemetryClient.query("listServices", { range: rangeFor(preset) }, { timeToLive: "1 minute" }),
 );
+
+const RANGE_OPTIONS = RANGE_PRESETS.map((preset) => ({ value: preset.id, label: preset.label }));
 
 export function FilterBar(props: { readonly children: ReactNode }) {
   return (
@@ -22,20 +25,12 @@ export function RangeSelect(props: {
   readonly onChange: (value: RangePresetId) => void;
 }) {
   return (
-    <select
-      className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm"
+    <Select
+      label="Time range"
       value={props.value}
-      onChange={(event) => {
-        const preset = RANGE_PRESETS.find((candidate) => candidate.id === event.target.value);
-        if (preset !== undefined) props.onChange(preset.id);
-      }}
-    >
-      {RANGE_PRESETS.map((preset) => (
-        <option key={preset.id} value={preset.id}>
-          {preset.label}
-        </option>
-      ))}
-    </select>
+      options={RANGE_OPTIONS}
+      onChange={props.onChange}
+    />
   );
 }
 
@@ -45,18 +40,18 @@ export function ServiceSelect(props: {
   readonly onChange: (value: string) => void;
 }) {
   const services = AsyncResult.getOrElse(useAtomValue(servicesAtom(props.range)), () => []);
+  const options = [
+    { value: "", label: "All services" },
+    ...services.map((service) => ({ value: service, label: service })),
+  ];
+  return <Select label="Service" value={props.value} options={options} onChange={props.onChange} />;
+}
+
+export function RefreshButton(props: { readonly onClick: () => void }) {
   return (
-    <select
-      className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm"
-      value={props.value}
-      onChange={(event) => props.onChange(event.target.value)}
-    >
-      <option value="">All services</option>
-      {services.map((service) => (
-        <option key={service} value={service}>
-          {service}
-        </option>
-      ))}
-    </select>
+    <Button aria-label="Refresh" onClick={props.onClick} className="ml-auto">
+      <RefreshIcon />
+      Refresh
+    </Button>
   );
 }

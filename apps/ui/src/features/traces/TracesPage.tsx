@@ -2,8 +2,9 @@ import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import type { TraceSummary } from "@hotel/api";
 import * as Atom from "effect/reactivity/Atom";
 import { useState } from "react";
-import { FilterBar, RangeSelect, ServiceSelect } from "../../components/Filters.tsx";
+import { FilterBar, RangeSelect, RefreshButton, ServiceSelect } from "../../components/Filters.tsx";
 import { Result } from "../../components/Result.tsx";
+import { Checkbox, NumberField } from "../../components/ui/index.ts";
 import { navigate } from "../../lib/route.ts";
 import { formatDuration, formatTimestamp, rangeFor, type RangePresetId } from "../../lib/time.ts";
 import { TelemetryClient } from "../../rpc/client.ts";
@@ -53,32 +54,19 @@ export function TracesPage() {
           value={filters.service}
           onChange={(service) => setFilters({ ...filters, service })}
         />
-        <label className="flex items-center gap-1 text-sm text-zinc-400">
-          Min duration (ms)
-          <input
-            type="number"
-            min={0}
-            className="w-24 rounded border border-zinc-700 bg-zinc-900 px-2 py-1"
-            value={filters.minDurationMs}
-            onChange={(event) =>
-              setFilters({ ...filters, minDurationMs: Number(event.target.value) })
-            }
-          />
-        </label>
-        <label className="flex items-center gap-1 text-sm text-zinc-400">
-          <input
-            type="checkbox"
-            checked={filters.onlyErrors}
-            onChange={(event) => setFilters({ ...filters, onlyErrors: event.target.checked })}
-          />
-          Errors only
-        </label>
-        <button
-          className="ml-auto rounded bg-zinc-800 px-3 py-1 text-sm hover:bg-zinc-700"
-          onClick={refresh}
-        >
-          Refresh
-        </button>
+        <NumberField
+          label="Min duration (ms)"
+          value={filters.minDurationMs}
+          min={0}
+          step={10}
+          onChange={(minDurationMs) => setFilters({ ...filters, minDurationMs })}
+        />
+        <Checkbox
+          label="Errors only"
+          checked={filters.onlyErrors}
+          onChange={(onlyErrors) => setFilters({ ...filters, onlyErrors })}
+        />
+        <RefreshButton onClick={refresh} />
       </FilterBar>
       <div className="flex-1 overflow-auto">
         <Result result={result}>{(traces) => <TraceTable traces={traces} />}</Result>

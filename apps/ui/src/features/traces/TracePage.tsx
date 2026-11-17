@@ -1,11 +1,9 @@
 import { useAtomValue } from "@effect/atom-react";
 import type { Attributes, LogEntry, Span, SpanEvent, TraceDetail } from "@hotel/api";
 import * as Atom from "effect/reactivity/Atom";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Result } from "../../components/Result.tsx";
 import { ArrowLeftIcon, Button } from "../../components/ui/index.ts";
-import { Radio } from "@base-ui/react/radio";
-import { RadioGroup } from "@base-ui/react/radio-group";
 import { navigate } from "../../lib/route.ts";
 import { formatDuration, formatTimestamp } from "../../lib/time.ts";
 import { serviceTone } from "../../lib/tone.ts";
@@ -45,47 +43,51 @@ export function TracePage(props: { readonly traceId: string }) {
 
 function TraceView(props: { readonly trace: TraceDetail }) {
   const rows = useMemo(() => buildWaterfall(props.trace.spans), [props.trace.spans]);
-  const [selected, setSelected] = useState<string | null>(rows[0]?.span.spanId ?? null);
-  const selectedSpan = props.trace.spans.find((span) => span.spanId === selected);
-  const spanLogs = props.trace.logs.filter((log) => log.spanId === selected);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div className="grid h-full grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <RadioGroup
-        aria-label="Spans"
-        value={selected}
-        onValueChange={setSelected}
-        className="overflow-auto border-r border-line/60"
-      >
-        {rows.map((row) => (
-          <Radio.Root
-            key={row.span.spanId}
-            value={row.span.spanId}
-            nativeButton
-            render={<button type="button" />}
-            className="flex w-full items-center gap-2 border-b border-line/30 px-4 py-1 text-left text-xs outline-none hover:bg-raised focus-visible:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent data-checked:bg-highlight"
-          >
-            <div className="w-2/5 truncate" style={{ paddingLeft: `${row.depth * 12}px` }}>
-              <span className={`font-medium ${serviceTone(row.span.serviceName).text}`}>
-                {row.span.serviceName}
-              </span>{" "}
-              <span className="text-ink-soft">{row.span.name}</span>
-            </div>
-            <div className="relative h-3 flex-1">
+    <div className="grid grid-cols-[minmax(0,max-content)_max-content_minmax(8rem,1fr)] gap-x-3">
+      {rows.map((row) => {
+        const { span } = row;
+        const isExpanded = expanded === span.spanId;
+        const detailId = `span-detail-${span.spanId}`;
+        return (
+          <Fragment key={span.spanId}>
+            <button
+              type="button"
+              aria-expanded={isExpanded}
+              aria-controls={isExpanded ? detailId : undefined}
+              onClick={() => setExpanded(isExpanded ? null : span.spanId)}
+              className="col-span-3 grid grid-cols-subgrid items-center border-b border-line/30 px-4 py-1 text-left text-xs outline-none hover:bg-raised focus-visible:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent aria-expanded:bg-highlight"
+            >
+              <div className="max-w-96 truncate" style={{ paddingLeft: `${row.depth * 12}px` }}>
+                <span className={`font-medium ${serviceTone(span.serviceName).text}`}>
+                  {span.serviceName}
+                </span>{" "}
+                <span className="text-ink-soft">{span.name}</span>
+              </div>
+              <span className="font-mono text-ink-faint">{formatDuration(span.durationMs)}</span>
+              <div className="relative h-3">
+                <div
+                  className={`absolute h-3 rounded-full ${span.statusCode === 2 ? "bg-cherry" : serviceTone(span.serviceName).fill}`}
+                  style={{ left: `${row.offsetPct}%`, width: `${row.widthPct}%` }}
+                />
+              </div>
+            </button>
+            {isExpanded && (
               <div
-                className={`absolute h-3 rounded-full ${row.span.statusCode === 2 ? "bg-cherry" : serviceTone(row.span.serviceName).fill}`}
-                style={{ left: `${row.offsetPct}%`, width: `${row.widthPct}%` }}
-              />
-            </div>
-            <span className="w-16 text-right font-mono text-ink-faint">
-              {formatDuration(row.span.durationMs)}
-            </span>
-          </Radio.Root>
-        ))}
-      </RadioGroup>
-      <div className="overflow-auto p-4">
-        {selectedSpan !== undefined && <SpanDetail span={selectedSpan} logs={spanLogs} />}
-      </div>
+                id={detailId}
+                className="col-span-3 min-w-0 border-b border-line/30 bg-raised/60 px-4 py-3"
+              >
+                <SpanDetail
+                  span={span}
+                  logs={props.trace.logs.filter((log) => log.spanId === span.spanId)}
+                />
+              </div>
+            )}
+          </Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -131,7 +133,7 @@ function Section(props: {
   return (
     <div>
       <h3 className="mb-1 text-sm font-semibold text-ink-soft">{props.title}</h3>
-      <pre className="rounded-2xl bg-raised px-4 py-3 text-xs whitespace-pre-wrap text-ink-soft">
+      <pre className="rounded-2xl bg-canvas px-4 py-3 text-xs wrap-anywhere whitespace-pre-wrap text-ink-soft">
         {JSON.stringify(props.value, null, 2)}
       </pre>
     </div>

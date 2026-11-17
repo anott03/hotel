@@ -85,11 +85,11 @@ function TraceTable(props: { readonly traces: ReadonlyArray<TraceSummary> }) {
     <table className="w-full text-sm">
       <thead className="sticky top-0 z-1 bg-canvas text-left text-xs text-ink-faint shadow-[inset_0_-1px_0_--alpha(var(--color-line)/60%)]">
         <tr>
-          <th className="px-4 py-2 font-normal">Start</th>
-          <th className="px-2 py-2 font-normal">Service</th>
-          <th className="px-2 py-2 font-normal">Root span</th>
-          <th className="px-2 py-2 font-normal">Spans</th>
-          <th className="w-1/4 px-4 py-2 font-normal">Duration</th>
+          <th className="py-2 pr-3 pl-4 font-normal">Start</th>
+          <th className="px-3 py-2 font-normal">Service</th>
+          <th className="px-3 py-2 font-normal whitespace-nowrap">Root span</th>
+          <th className="px-3 py-2 font-normal">Spans</th>
+          <th className="w-full py-2 pr-4 pl-3 font-normal">Duration</th>
         </tr>
       </thead>
       <tbody>
@@ -99,13 +99,13 @@ function TraceTable(props: { readonly traces: ReadonlyArray<TraceSummary> }) {
             className="cursor-pointer border-b border-line/30 hover:bg-raised"
             onClick={() => navigate({ page: "trace", traceId: trace.traceId })}
           >
-            <td className="px-4 py-1.5 font-mono text-xs whitespace-nowrap text-ink-faint">
+            <td className="py-1.5 pr-3 pl-4 font-mono text-xs whitespace-nowrap text-ink-faint">
               {formatTimestamp(trace.startTime)}
             </td>
-            <td className="px-2 py-1.5">
+            <td className="px-3 py-1.5">
               <ServiceTag name={trace.rootServiceName} />
             </td>
-            <td className="px-2 py-1.5">
+            <td className="px-3 py-1.5 whitespace-nowrap">
               {trace.rootSpanName}
               {trace.errorCount > 0 && (
                 <span className="ml-2 rounded-full bg-cherry/15 px-2 text-xs font-medium text-cherry">
@@ -113,18 +113,18 @@ function TraceTable(props: { readonly traces: ReadonlyArray<TraceSummary> }) {
                 </span>
               )}
             </td>
-            <td className="px-2 py-1.5 text-ink-soft">{trace.spanCount}</td>
-            <td className="px-4 py-1.5">
-              <div className="flex items-center gap-2">
-                <div className="h-2 flex-1 rounded-full bg-highlight">
+            <td className="px-3 py-1.5 text-ink-soft">{trace.spanCount}</td>
+            <td className="w-full py-1.5 pr-4 pl-3">
+              <div className="flex items-center gap-3">
+                <span className="w-14 shrink-0 font-mono text-xs text-ink-soft">
+                  {formatDuration(trace.durationMs)}
+                </span>
+                <div className="h-2 min-w-32 flex-1 rounded-full bg-highlight">
                   <div
                     className={`h-2 rounded-full ${trace.errorCount > 0 ? "bg-cherry" : serviceTone(trace.rootServiceName).fill}`}
                     style={{ width: `${Math.max((trace.durationMs / maxDuration) * 100, 1)}%` }}
                   />
                 </div>
-                <span className="w-16 text-right font-mono text-xs text-ink-soft">
-                  {formatDuration(trace.durationMs)}
-                </span>
               </div>
             </td>
           </tr>

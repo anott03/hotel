@@ -1,0 +1,13 @@
+{
+  "name": "@hotel/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@effect/sql-pg": "^4.1.4",
+    "@hotel/otlp": "workspace:*",
+    "effect": "^4.1.4"
+  }
+}

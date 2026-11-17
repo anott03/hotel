@@ -12,7 +12,7 @@
     "dev": "alchemy dev",
     "plan": "alchemy plan",
     "generate": "pnpm --filter @hotel/otlp generate",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p apps/ui/tsconfig.json"
   },
   "dependencies": {
     "@alchemy.run/cloudflare": "2.0.0-beta.87",
@@ -20,7 +20,9 @@
     "@alchemy.run/sql": "2.0.0-beta.87",
     "@effect/platform-node": "^4.1.4",
     "@effect/sql-pg": "^4.1.4",
+    "@hotel/api-worker": "workspace:*",
     "@hotel/collector": "workspace:*",
+    "@hotel/ui": "workspace:*",
     "alchemy": "2.0.0-beta.87",
     "effect": "^4.1.4",
     "pg": "^8.23.1"

@@ -147,6 +147,7 @@ export default class Collector extends Cloudflare.Worker<Collector>()(
           Effect.catch(() => Effect.succeed(Option.none<Uint8Array>())),
         );
         if (Option.isNone(body)) return textResponse(400, "unreadable or oversized body");
+        if (body.value.byteLength === 0) return otlpResponse(options.respond(encoding));
 
         const rows = yield* options.decode(body.value, encoding).pipe(Effect.option);
         if (Option.isNone(rows)) return textResponse(400, "invalid OTLP payload");

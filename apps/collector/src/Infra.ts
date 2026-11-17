@@ -3,7 +3,7 @@ import * as Planetscale from "@alchemy.run/planetscale";
 import * as Alchemy from "alchemy";
 import * as Effect from "effect/Effect";
 
-const LIVE_STAGE = "live_amitav";
+export const LIVE_STAGE = "live_amitav";
 
 export const Database = Effect.gen(function* () {
   if (yield* Alchemy.ALCHEMY_DEV) {

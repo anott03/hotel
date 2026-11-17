@@ -5,6 +5,7 @@ import { TelemetryQueries, TelemetryQueriesLive } from "@hotel/db";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import { RpcSerialization, RpcServer } from "effect/rpc";
+import { exportToCollector } from "../../collector/src/Destinations.ts";
 import { ReaderHyperdrive } from "./Infra.ts";
 
 export default class Api extends Cloudflare.Workers.RpcWorker<Api>()(
@@ -14,6 +15,7 @@ export default class Api extends Cloudflare.Workers.RpcWorker<Api>()(
     workersDev: false,
     schema: TelemetryRpcs,
     compatibility: { flags: ["nodejs_compat"] },
+    observability: exportToCollector,
   },
   Effect.gen(function* () {
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(ReaderHyperdrive);
@@ -34,5 +36,7 @@ export default class Api extends Cloudflare.Workers.RpcWorker<Api>()(
     return RpcServer.toHttpEffect(TelemetryRpcs).pipe(
       Effect.provide(Layer.mergeAll(handlers, RpcSerialization.layerJson)),
     );
-  }).pipe(Effect.provide(Cloudflare.Hyperdrive.ConnectBinding)),
+  }).pipe(
+    Effect.provide(Layer.mergeAll(Cloudflare.Hyperdrive.ConnectBinding, Cloudflare.Telemetry())),
+  ),
 ) {}

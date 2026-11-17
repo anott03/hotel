@@ -7,6 +7,7 @@ import * as Output from "alchemy/Output";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
+import { CollectorDestinations } from "./apps/collector/src/Destinations.ts";
 import { IngestToken } from "./apps/collector/src/Infra.ts";
 
 export default Alchemy.Stack(
@@ -17,6 +18,7 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const collector = yield* Collector;
+    yield* CollectorDestinations(collector.url.as<string>());
     const ui = yield* Website;
     const token = yield* IngestToken;
 

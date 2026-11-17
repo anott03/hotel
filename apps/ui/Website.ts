@@ -1,5 +1,6 @@
 import * as Cloudflare from "@alchemy.run/cloudflare";
 import Api from "@hotel/api-worker";
+import { exportToCollector } from "../collector/src/Destinations.ts";
 
 export const Website = Cloudflare.Website.Vite("Ui", {
   rootDir: import.meta.dirname,
@@ -14,6 +15,7 @@ export const Website = Cloudflare.Website.Vite("Ui", {
     policies: [{ decision: "allow", include: [{ email: { email: "amitavn@pm.me" } }] }],
   },
   env: { API: Api },
+  observability: exportToCollector,
   memo: {
     include: [
       "src/**",

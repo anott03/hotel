@@ -2,12 +2,18 @@ import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import type { LogEntry } from "@hotel/api";
 import * as Atom from "effect/reactivity/Atom";
 import { useState } from "react";
-import { FilterBar, RangeSelect, RefreshButton, ServiceSelect } from "../../components/Filters.tsx";
+import { FilterBar, RangeSelect, RefreshButton } from "../../components/Filters.tsx";
 import { Result } from "../../components/Result.tsx";
 import { ServiceTag } from "../../components/ServiceTag.tsx";
 import { Button, Input, Select } from "../../components/ui/index.ts";
-import { navigate } from "../../lib/route.ts";
-import { formatTimestamp, rangeFor, type RangePresetId } from "../../lib/time.ts";
+import { navigate, replaceSearchParams, useSearchParams } from "../../lib/route.ts";
+import {
+  DEFAULT_RANGE,
+  formatTimestamp,
+  parseRangePreset,
+  rangeFor,
+  type RangePresetId,
+} from "../../lib/time.ts";
 import { TelemetryClient } from "../../rpc/client.ts";
 
 interface LogFilters {
@@ -24,6 +30,23 @@ const SEVERITIES = [
   { label: "Warn+", value: 13 },
   { label: "Error+", value: 17 },
 ];
+
+const parseFilters = (params: URLSearchParams): LogFilters => ({
+  range: parseRangePreset(params.get("range")),
+  service: params.get("service") ?? "",
+  minSeverity:
+    SEVERITIES.find((severity) => String(severity.value) === params.get("level"))?.value ?? 0,
+  query: params.get("q") ?? "",
+});
+
+const writeFilters = (filters: LogFilters) => {
+  const params = new URLSearchParams();
+  if (filters.range !== DEFAULT_RANGE) params.set("range", filters.range);
+  if (filters.service !== "") params.set("service", filters.service);
+  if (filters.minSeverity > 0) params.set("level", String(filters.minSeverity));
+  if (filters.query !== "") params.set("q", filters.query);
+  replaceSearchParams(params);
+};
 
 const logsAtom = Atom.family((key: string) => {
   const filters: LogFilters = JSON.parse(key);
@@ -48,13 +71,8 @@ const severityClass = (severityNumber: number): string => {
 };
 
 export function LogsPage() {
-  const [filters, setFilters] = useState<LogFilters>({
-    range: "1h",
-    service: "",
-    minSeverity: 0,
-    query: "",
-  });
-  const [draftQuery, setDraftQuery] = useState("");
+  const filters = parseFilters(useSearchParams());
+  const [draftQuery, setDraftQuery] = useState(filters.query);
   const atom = logsAtom(JSON.stringify(filters));
   const result = useAtomValue(atom);
   const refresh = useAtomRefresh(atom);
@@ -64,24 +82,19 @@ export function LogsPage() {
       <FilterBar>
         <RangeSelect
           value={filters.range}
-          onChange={(range) => setFilters({ ...filters, range })}
-        />
-        <ServiceSelect
-          range={filters.range}
-          value={filters.service}
-          onChange={(service) => setFilters({ ...filters, service })}
+          onChange={(range) => writeFilters({ ...filters, range })}
         />
         <Select
           label="Minimum severity"
           value={filters.minSeverity}
           options={SEVERITIES}
-          onChange={(minSeverity) => setFilters({ ...filters, minSeverity })}
+          onChange={(minSeverity) => writeFilters({ ...filters, minSeverity })}
         />
         <form
           className="flex flex-1"
           onSubmit={(event) => {
             event.preventDefault();
-            setFilters({ ...filters, query: draftQuery.trim() });
+            writeFilters({ ...filters, query: draftQuery.trim() });
           }}
         >
           <Input
@@ -95,13 +108,18 @@ export function LogsPage() {
         <RefreshButton onClick={refresh} />
       </FilterBar>
       <div className="flex-1 overflow-auto">
-        <Result result={result}>{(logs) => <LogTable logs={logs} />}</Result>
+        <Result result={result}>
+          {(logs) => <LogTable logs={logs} showService={filters.service === ""} />}
+        </Result>
       </div>
     </div>
   );
 }
 
-function LogTable(props: { readonly logs: ReadonlyArray<LogEntry> }) {
+function LogTable(props: {
+  readonly logs: ReadonlyArray<LogEntry>;
+  readonly showService: boolean;
+}) {
   const [expanded, setExpanded] = useState<string | null>(null);
   if (props.logs.length === 0)
     return <p className="p-4 text-sm text-ink-faint">No logs in this range.</p>;
@@ -112,6 +130,7 @@ function LogTable(props: { readonly logs: ReadonlyArray<LogEntry> }) {
           <LogRow
             key={log.id}
             log={log}
+            showService={props.showService}
             expanded={expanded === log.id}
             onToggle={() => setExpanded(expanded === log.id ? null : log.id)}
           />
@@ -123,6 +142,7 @@ function LogTable(props: { readonly logs: ReadonlyArray<LogEntry> }) {
 
 function LogRow(props: {
   readonly log: LogEntry;
+  readonly showService: boolean;
   readonly expanded: boolean;
   readonly onToggle: () => void;
 }) {
@@ -141,14 +161,16 @@ function LogRow(props: {
             {log.severityText || log.severityNumber}
           </span>
         </td>
-        <td className="px-2 py-1">
-          <ServiceTag name={log.serviceName} />
-        </td>
+        {props.showService && (
+          <td className="px-2 py-1">
+            <ServiceTag name={log.serviceName} />
+          </td>
+        )}
         <td className="w-full px-2 py-1 break-all">{log.body}</td>
       </tr>
       {props.expanded && (
         <tr className="border-b border-line/30 bg-raised/60">
-          <td colSpan={4} className="px-4 py-3">
+          <td colSpan={props.showService ? 4 : 3} className="px-4 py-3">
             {log.traceId !== null && (
               <Button
                 variant="link"

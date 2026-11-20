@@ -1,13 +1,14 @@
 import { useAtomValue } from "@effect/atom-react";
 import * as AsyncResult from "effect/reactivity/AsyncResult";
-import * as Atom from "effect/reactivity/Atom";
 import type { ReactNode } from "react";
 import { RANGE_PRESETS, rangeFor, type RangePresetId } from "../lib/time.ts";
 import { TelemetryClient } from "../rpc/client.ts";
 import { Button, RefreshIcon, Select } from "./ui/index.ts";
 
-const servicesAtom = Atom.family((preset: RangePresetId) =>
-  TelemetryClient.query("listServices", { range: rangeFor(preset) }, { timeToLive: "1 minute" }),
+const servicesAtom = TelemetryClient.query(
+  "listServices",
+  { range: rangeFor("7d") },
+  { timeToLive: "1 minute" },
 );
 
 const RANGE_OPTIONS = RANGE_PRESETS.map((preset) => ({ value: preset.id, label: preset.label }));
@@ -35,14 +36,18 @@ export function RangeSelect(props: {
 }
 
 export function ServiceSelect(props: {
-  readonly range: RangePresetId;
   readonly value: string;
   readonly onChange: (value: string) => void;
 }) {
-  const services = AsyncResult.getOrElse(useAtomValue(servicesAtom(props.range)), () => []);
+  const services: ReadonlyArray<string> = AsyncResult.getOrElse(
+    useAtomValue(servicesAtom),
+    () => [],
+  );
+  const names =
+    props.value === "" || services.includes(props.value) ? services : [props.value, ...services];
   const options = [
     { value: "", label: "All services" },
-    ...services.map((service) => ({ value: service, label: service })),
+    ...names.map((service) => ({ value: service, label: service })),
   ];
   return <Select label="Service" value={props.value} options={options} onChange={props.onChange} />;
 }

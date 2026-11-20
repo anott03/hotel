@@ -10,6 +10,11 @@ export const RANGE_PRESETS = [
 
 export type RangePresetId = (typeof RANGE_PRESETS)[number]["id"];
 
+export const DEFAULT_RANGE: RangePresetId = "1h";
+
+export const parseRangePreset = (value: string | null): RangePresetId =>
+  RANGE_PRESETS.find((preset) => preset.id === value)?.id ?? DEFAULT_RANGE;
+
 export const rangeFor = (id: RangePresetId, now: Date = new Date()): TimeRange => {
   const preset = RANGE_PRESETS.find((candidate) => candidate.id === id) ?? RANGE_PRESETS[1];
   return { from: new Date(now.getTime() - preset.minutes * 60_000), to: now };

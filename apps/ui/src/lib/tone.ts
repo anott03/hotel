@@ -10,10 +10,10 @@ const TONES = [
 
 export type Tone = (typeof TONES)[number];
 
-export const serviceTone = (serviceName: string): Tone => {
+export const toneFor = (name: string): Tone => {
   let hash = 2166136261;
-  for (let index = 0; index < serviceName.length; index++) {
-    hash = Math.imul(hash ^ serviceName.charCodeAt(index), 16777619) >>> 0;
+  for (let index = 0; index < name.length; index++) {
+    hash = Math.imul(hash ^ name.charCodeAt(index), 16777619) >>> 0;
   }
   return TONES[hash % TONES.length] ?? TONES[0];
 };

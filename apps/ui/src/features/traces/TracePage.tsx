@@ -6,7 +6,7 @@ import { Result } from "../../components/Result.tsx";
 import { ArrowLeftIcon, Button } from "../../components/ui/index.ts";
 import { navigate } from "../../lib/route.ts";
 import { formatDuration, formatTimestamp } from "../../lib/time.ts";
-import { serviceTone } from "../../lib/tone.ts";
+import { toneFor } from "../../lib/tone.ts";
 import { TelemetryClient } from "../../rpc/client.ts";
 import { buildWaterfall } from "./waterfall.ts";
 
@@ -60,16 +60,21 @@ function TraceView(props: { readonly trace: TraceDetail }) {
               onClick={() => setExpanded(isExpanded ? null : span.spanId)}
               className="col-span-3 grid grid-cols-subgrid items-center border-b border-line/30 px-4 py-1 text-left text-xs outline-none hover:bg-raised focus-visible:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent aria-expanded:bg-highlight"
             >
-              <div className="max-w-96 truncate" style={{ paddingLeft: `${row.depth * 12}px` }}>
-                <span className={`font-medium ${serviceTone(span.serviceName).text}`}>
-                  {span.serviceName}
-                </span>{" "}
-                <span className="text-ink-soft">{span.name}</span>
+              <div
+                className="flex max-w-96 min-w-0 gap-1 whitespace-nowrap"
+                style={{ paddingLeft: `${row.depth * 12}px` }}
+              >
+                <span
+                  className={`max-w-full shrink-0 truncate font-medium ${toneFor(span.name).text}`}
+                >
+                  {span.name}
+                </span>
+                <span className="min-w-0 truncate text-ink-faint">{span.serviceName}</span>
               </div>
               <span className="font-mono text-ink-faint">{formatDuration(span.durationMs)}</span>
               <div className="relative h-3">
                 <div
-                  className={`absolute h-3 rounded-full ${span.statusCode === 2 ? "bg-cherry" : serviceTone(span.serviceName).fill}`}
+                  className={`absolute h-3 rounded-full ${span.statusCode === 2 ? "bg-cherry" : toneFor(span.name).fill}`}
                   style={{ left: `${row.offsetPct}%`, width: `${row.widthPct}%` }}
                 />
               </div>

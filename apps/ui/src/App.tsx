@@ -1,9 +1,10 @@
 import { Toggle } from "@base-ui/react/toggle";
 import { ToggleGroup } from "@base-ui/react/toggle-group";
+import { ServiceSelect } from "./components/Filters.tsx";
 import { LogsPage } from "./features/logs/LogsPage.tsx";
 import { TracePage } from "./features/traces/TracePage.tsx";
 import { TracesPage } from "./features/traces/TracesPage.tsx";
-import { navigate, useRoute } from "./lib/route.ts";
+import { navigate, selectService, useRoute, useService } from "./lib/route.ts";
 
 type Section = "logs" | "traces";
 
@@ -22,6 +23,7 @@ const WORDMARK = [
 
 export function App() {
   const route = useRoute();
+  const service = useService();
   const section: Section = route.page === "logs" ? "logs" : "traces";
   return (
     <div className="flex h-screen flex-col">
@@ -34,6 +36,7 @@ export function App() {
             </span>
           ))}
         </span>
+        <ServiceSelect value={service} onChange={selectService} />
         <ToggleGroup
           aria-label="Section"
           value={[section]}
